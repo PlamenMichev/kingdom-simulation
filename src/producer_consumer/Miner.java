@@ -36,7 +36,7 @@ public class Miner implements Runnable {
 
 
                 logger.log("Miner found is waiting after mining and depositing valuables " + numberOfValuables);
-                Thread.sleep(10000);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

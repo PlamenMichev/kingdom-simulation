@@ -2,18 +2,24 @@ package producer_consumer;
 
 import logger.Logger;
 import multiton.Valuable;
+import readers_writers.Door;
 import shared.Deposit;
+import shared.TreasureRoom;
+import utility.collection.ArrayList;
 
-import java.util.ArrayList;
 import java.util.Random;
 
 public class ValuableTransporter implements Runnable {
     private final Deposit<Valuable> deposit;
+    private final TreasureRoom treasureRoom;
+    private final Door door;
     private final Random random = new Random();
     private final Logger logger = Logger.getInstance();
 
-    public ValuableTransporter(Deposit<Valuable> deposit) {
+    public ValuableTransporter(Deposit<Valuable> deposit, TreasureRoom treasureRoom, Door door) {
         this.deposit = deposit;
+        this.treasureRoom = treasureRoom;
+        this.door = door;
     }
 
     @Override
@@ -32,10 +38,19 @@ public class ValuableTransporter implements Runnable {
                     logger.log("Valuable transporter collected " + collectedValuable.toString() + " valuables");
                 }
 
-                logger.log("Valuable transporter is transporting valuables");
-                collectedValuables.clear();
 
-                Thread.sleep(10000);
+                logger.log("Valuable transporter is transporting valuables");
+                door.requestWriteLock();
+
+                treasureRoom.add("valuabletransporter", collectedValuables);
+
+                while (!collectedValuables.isEmpty()) {
+                    collectedValuables.remove(0);
+                }
+
+                logger.log("Valuable transporter transported " + numberOfValuables + " valuables");
+                door.releaseWriteLock();
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
